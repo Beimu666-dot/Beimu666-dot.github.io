@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>祝"藏青海盐"同学立秋快乐</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            }
+            .text-glow {
+                text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        /* 动态背景：渐变+噪点+星空 */
+        body {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            overflow: hidden;
+            position: relative;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='2000' height='2000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='transparent'/%3E%3C/svg%3E") center/cover;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        /* 3D文字效果 */
+        .text-3d {
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            font-weight: 900;
+            color: #b33939;
+            text-shadow: 
+                0 5px 10px rgba(0,0,0,0.2),
+                0 15px 30px rgba(0,0,0,0.1),
+                0 -5px 10px rgba(255,255,255,0.3);
+            transform-style: preserve-3d;
+            animation: breathe 3s infinite ease-in-out;
+            line-height: 1.2;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* 动态星空（光点） */
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #fff;
+            animation: starTwinkle 5s infinite;
+        }
+
+        /* 交互枫叶（点击生成） */
+        .interactive-maple {
+            position: absolute;
+            color: #d74;
+            font-size: 20px;
+            opacity: 0.8;
+            animation: fall 8s linear forwards;
+        }
+
+        /* 原有枫叶动画优化 */
+        .maple-fall {
+            position: absolute;
+            top: -50px;
+            color: #e74c3c;
+            opacity: 0.8;
+            animation: fall 10s linear infinite;
+        }
+        .maple-fall:nth-child(odd) { color: #c0392b; }
+        .maple-fall:nth-child(3n) { color: #ff793f; }
+        @keyframes fall {
+            0% { transform: translate(0,0) rotate(0deg); }
+            100% { transform: translate(calc(100vw * var(--x-offset)), 100vh) rotate(360deg); }
+        }
+
+        /* 星空闪烁动画 */
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* 音效按钮 */
+        .sound-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #b33939;
+            color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .sound-btn.playing { background: #ff6b6b; }
+        .sound-btn:hover { transform: scale(1.1); }
+
+        /* 中央文字容器 */
+        .text-container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            text-align: center; /* 确保所有文字内容居中 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空光点 -->
+    <div id="stars" class="absolute inset-0 z-0"></div>
+    
+    <!-- 中央文字容器（确保居中） -->
+    <div class="text-container">
+        <h1 class="text-3d text-glow mb-6">祝"藏青海盐"同学立秋快乐</h1>
+        <p class="text-[clamp(1rem,4vw,1.8rem)] text-red-900/80 text-shadow">一叶落而知天下秋</p>
+        <p class="text-[clamp(0.8rem,3vw,1.2rem)] text-red-800/70 mt-4 max-w-md">愿这个秋天，所有美好都如期而至</p>
+    </div>
+    
+    <!-- 自动飘落枫叶容器 -->
+    <div id="mapleContainer" class="absolute inset-0 z-1 pointer-events-none"></div>
+    
+    <!-- 音效按钮 -->
+    <div id="soundBtn" class="sound-btn">
+        <i class="fa fa-volume-up text-2xl"></i>
+    </div>
+    
+    <!-- 背景音效 -->
+    <audio id="bgSound" src="https://cdn.jsdelivr.net/gh/liuyib/ambient-sounds@main/wind-autumn.mp3" preload="auto"></audio>
+    
+    <script>
+        // 生成动态星空
+        function createStars() {
+            const stars = document.getElementById('stars');
+            const count = 80; // 星点数量
+            stars.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                stars.appendChild(star);
+            }
+        }
+
+        // 生成自动飘落的枫叶
+        function createMaples() {
+            const container = document.getElementById('mapleContainer');
+            const count = window.innerWidth < 600 ? 20 : 30;
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const maple = document.createElement('div');
+                maple.className = 'maple-fall';
+                maple.innerHTML = '<i class="fa fa-leaf"></i>';
+                maple.style.fontSize = `${Math.random() * 20 + 15}px`;
+                maple.style.left = `${Math.random() * 100}vw`;
+                maple.style.animationDuration = `${Math.random() * 8 + 8}s`;
+                maple.style.setProperty('--x-offset', (Math.random() - 0.5) * 0.8);
+                maple.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(maple);
+            }
+        }
+
+        // 点击屏幕生成交互枫叶
+        document.addEventListener('touchstart', (e) => {
+            const maple = document.createElement('div');
+            maple.className = 'interactive-maple';
+            maple.innerHTML = '<i class="fa fa-leaf"></i>';
+            maple.style.left = `${e.touches[0].clientX}px`;
+            maple.style.top = `${e.touches[0].clientY}px`;
+            maple.style.fontSize = `${Math.random() * 15 + 15}px`;
+            maple.style.animationDuration = `${Math.random() * 6 + 6}s`;
+            maple.style.color = `rgb(${Math.random()*200+55}, ${Math.random()*50+100}, ${Math.random()*50+50})`;
+            document.body.appendChild(maple);
+            setTimeout(() => maple.remove(), 8000); // 8秒后移除
+        });
+
+        // 音效控制
+        const soundBtn = document.getElementById('soundBtn');
+        const bgSound = document.getElementById('bgSound');
+        let isPlaying = false;
+        soundBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            soundBtn.classList.toggle('playing', isPlaying);
+            if (isPlaying) {
+                bgSound.play().catch(err => {
+                    // 自动播放被阻止，引导用户交互
+                    alert('请点击授权播放音效（浏览器限制）');
+                    isPlaying = false;
+                    soundBtn.classList.remove('playing');
+                });
+            } else {
+                bgSound.pause();
+            }
+        });
+
+        // 初始化
+        window.addEventListener('load', () => {
+            createStars();
+            createMaples();
+        });
+
+        // 窗口大小变化时重新布局
+        window.addEventListener('resize', () => {
+            createStars();
+            createMaples();
+        });
+    </script>
+</body>
+</html>
