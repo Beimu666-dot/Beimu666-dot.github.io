@@ -133,21 +133,26 @@
 
     const countdownEl = document.querySelector('.countdown');
     let current = 3;
-    function startCountdown() {
-      countdownEl.classList.add('active');
-      const timer = setInterval(() => {
-        if (current > 1) {
-          current--;
-          countdownEl.textContent = current;
-        } else {
-          clearInterval(timer);
-          countdownEl.textContent = '1';
-          setTimeout(() => {
-            countdownEl.classList.remove('active');
-          }, 1000);
-        }
+     function startCountdown() {
+  console.log("倒计时开始"); // 调试输出
+  countdownEl.classList.add('active');
+  const timer = setInterval(() => {
+    console.log("当前计数:", current); // 调试输出
+    if (current > 1) {
+      current--;
+      countdownEl.textContent = current;
+    } else {
+      console.log("准备跳转"); // 调试输出
+      clearInterval(timer);
+      setTimeout(() => {
+        console.log("触发跳转"); // 调试输出
+        setTimeout(() => {
+  window.location.href = "fireworks.html"; // 强制跳转
+}, 1000);
       }, 1000);
     }
+  }, 1000);
+}
 
     // ==== 初始化 ====
     try {
