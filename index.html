@@ -9,15 +9,14 @@
       overflow: hidden; 
       background: #000; 
       height: 100vh; 
+      font-family: Arial;
     }
-    /* 倒计时文字样式 */
     .countdown {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
-      font-family: 'Arial', sans-serif;
       font-size: 15vw;
       color: #fff;
       text-shadow: 0 0 20px rgba(255,255,255,0.8);
@@ -25,121 +24,99 @@
       transition: opacity 0.5s;
     }
     .countdown.active { opacity: 1; }
-    
-    /* 加载提示 */
     .loading {
       position: fixed;
       top: 20px;
       left: 20px;
       color: white;
-      font-family: Arial;
       z-index: 100;
+    }
+    .error {
+      color: red;
+      font-size: 24px;
+      text-align: center;
+      margin-top: 50px;
     }
   </style>
 </head>
 <body>
-  <!-- 加载提示 -->
-  <div class="loading">加载中...</div>
-  
-  <!-- 倒计时容器 -->
+  <div class="loading">正在加载Three.js...</div>
   <div class="countdown">3</div>
 
-  <!-- Three.js 核心库（使用官方推荐的CDN） -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <!-- 使用 unpkg CDN -->
+  <script src="https://unpkg.com/three@0.132.2/build/three.min.js"></script>
 
   <script>
-    // ======================
-    // 0. 资源加载检查
-    // ======================
+    // ==== 错误处理 ====
     if (typeof THREE === 'undefined') {
-      document.querySelector('.loading').textContent = 'Three.js 加载失败，请刷新或检查网络';
-      throw new Error('Three.js 未正确加载');
+      showError("Three.js 加载失败，请刷新页面或检查网络");
     }
 
-    // ======================
-    // 1. 初始化 Three.js 场景
-    // ======================
+    function showError(msg) {
+      document.querySelector('.loading').textContent = '';
+      const errorEl = document.createElement('div');
+      errorEl.className = 'error';
+      errorEl.innerHTML = `
+        ${msg}<br/>
+        <button onclick="window.location.reload()">点击重试</button>
+      `;
+      document.body.appendChild(errorEl);
+      throw new Error(msg);
+    }
+
+    // ==== 你的原始代码（保持不变）====
     let scene, camera, renderer, points;
     function initThreeJS() {
-      // 移除加载提示
       document.querySelector('.loading').style.display = 'none';
-      
-      // 场景
       scene = new THREE.Scene();
-      
-      // 相机（透视相机）
-      camera = new THREE.PerspectiveCamera(
-        75, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
-      );
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.z = 5;
-
-      // 渲染器
-      renderer = new THREE.WebGLRenderer({ 
-        antialias: true, 
-        alpha: true 
-      });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // 2. 创建粒子几何体（BufferGeometry）
       const geometry = new THREE.BufferGeometry();
-      const count = 10000; // 粒子数量
-      const positions = new Float32Array(count * 3); // 每个粒子 x,y,z
-      const colors = new Float32Array(count * 3);     // 每个粒子 rgb
+      const count = 10000;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
 
-      // 填充数据：随机分布在球体范围内
       for (let i = 0; i < count; i++) {
-        // 位置：球体随机分布
         const x = (Math.random() - 0.5) * 10;
         const y = (Math.random() - 0.5) * 10;
         const z = (Math.random() - 0.5) * 10;
         positions.set([x, y, z], i * 3);
-
-        // 颜色：随机紫金色/粉色
         const color = Math.random() > 0.5 
-          ? new THREE.Color(0x9c4eff) // 紫金色
-          : new THREE.Color(0xff69b4); // 粉色
+          ? new THREE.Color(0x9c4eff)
+          : new THREE.Color(0xff69b4);
         colors.set([color.r, color.g, color.b], i * 3);
       }
 
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-      // 3. 粒子材质（PointsMaterial）
       const material = new THREE.PointsMaterial({
-        size: 0.03,          // 粒子大小
-        vertexColors: true,  // 使用顶点颜色
-        transparent: true,   // 透明
-        blending: THREE.AdditiveBlending // 叠加混合（更梦幻）
+        size: 0.03,
+        vertexColors: true,
+        transparent: true,
+        blending: THREE.AdditiveBlending
       });
 
-      // 4. 创建粒子对象
       points = new THREE.Points(geometry, material);
       scene.add(points);
-
-      // 监听窗口变化
       window.addEventListener('resize', onWindowResize);
     }
 
-    // 窗口变化时更新渲染器和相机
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // ======================
-    // 2. 粒子动画逻辑（随时间波动）
-    // ======================
     let time = 0;
     function animateParticles() {
       time += 0.01;
       const positions = points.geometry.attributes.position.array;
       for (let i = 0; i < positions.length; i += 3) {
-        // 让粒子沿 z 轴波动（正弦曲线）
         const x = positions[i];
         const y = positions[i + 1];
         const z = positions[i + 2];
@@ -148,23 +125,14 @@
       points.geometry.attributes.position.needsUpdate = true;
     }
 
-    // ======================
-    // 3. 整体动画循环
-    // ======================
     function animate() {
       requestAnimationFrame(animate);
-      // 更新粒子波动
       animateParticles();
-      // 渲染场景
       renderer.render(scene, camera);
     }
 
-    // ======================
-    // 4. 倒计时逻辑
-    // ======================
     const countdownEl = document.querySelector('.countdown');
     let current = 3;
-
     function startCountdown() {
       countdownEl.classList.add('active');
       const timer = setInterval(() => {
@@ -174,7 +142,6 @@
         } else {
           clearInterval(timer);
           countdownEl.textContent = '1';
-          // 1秒后隐藏倒计时
           setTimeout(() => {
             countdownEl.classList.remove('active');
           }, 1000);
@@ -182,19 +149,14 @@
       }, 1000);
     }
 
-    // ======================
-    // 5. 初始化执行（确保Three.js已加载）
-    // ======================
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        initThreeJS();
-        animate();
-        startCountdown();
-      } catch (error) {
-        console.error('初始化失败:', error);
-        document.querySelector('.loading').textContent = '初始化错误: ' + error.message;
-      }
-    });
+    // ==== 初始化 ====
+    try {
+      initThreeJS();
+      animate();
+      startCountdown();
+    } catch (e) {
+      showError(`初始化错误: ${e.message}`);
+    }
   </script>
 </body>
 </html>
