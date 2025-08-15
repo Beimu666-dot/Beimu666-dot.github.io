@@ -25,25 +25,48 @@
       transition: opacity 0.5s;
     }
     .countdown.active { opacity: 1; }
+    
+    /* 加载提示 */
+    .loading {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-family: Arial;
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
+  <!-- 加载提示 -->
+  <div class="loading">加载中...</div>
+  
   <!-- 倒计时容器 -->
   <div class="countdown">3</div>
 
-  <!-- Three.js 依赖 -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/particles/THREE.PointsMaterial.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/geometries/BufferGeometry.js"></script>
+  <!-- Three.js 核心库（使用官方推荐的CDN） -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 
   <script>
+    // ======================
+    // 0. 资源加载检查
+    // ======================
+    if (typeof THREE === 'undefined') {
+      document.querySelector('.loading').textContent = 'Three.js 加载失败，请刷新或检查网络';
+      throw new Error('Three.js 未正确加载');
+    }
+
     // ======================
     // 1. 初始化 Three.js 场景
     // ======================
     let scene, camera, renderer, points;
     function initThreeJS() {
+      // 移除加载提示
+      document.querySelector('.loading').style.display = 'none';
+      
       // 场景
       scene = new THREE.Scene();
+      
       // 相机（透视相机）
       camera = new THREE.PerspectiveCamera(
         75, 
@@ -54,7 +77,10 @@
       camera.position.z = 5;
 
       // 渲染器
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true 
+      });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
@@ -140,31 +166,35 @@
     let current = 3;
 
     function startCountdown() {
-  console.log("倒计时开始"); // 调试输出
-  countdownEl.classList.add('active');
-  const timer = setInterval(() => {
-    console.log("当前计数:", current); // 调试输出
-    if (current > 1) {
-      current--;
-      countdownEl.textContent = current;
-    } else {
-      console.log("准备跳转"); // 调试输出
-      clearInterval(timer);
-      setTimeout(() => {
-        console.log("触发跳转"); // 调试输出
-        setTimeout(() => {
-  window.location.href = "fireworks.html"; // 强制跳转
-}, 1000);
+      countdownEl.classList.add('active');
+      const timer = setInterval(() => {
+        if (current > 1) {
+          current--;
+          countdownEl.textContent = current;
+        } else {
+          clearInterval(timer);
+          countdownEl.textContent = '1';
+          // 1秒后隐藏倒计时
+          setTimeout(() => {
+            countdownEl.classList.remove('active');
+          }, 1000);
+        }
       }, 1000);
     }
-  }, 1000);
-}
+
     // ======================
-    // 5. 初始化执行
+    // 5. 初始化执行（确保Three.js已加载）
     // ======================
-    initThreeJS();   // 初始化 Three.js
-    animate();       // 启动动画循环
-    startCountdown();// 启动倒计时
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        initThreeJS();
+        animate();
+        startCountdown();
+      } catch (error) {
+        console.error('初始化失败:', error);
+        document.querySelector('.loading').textContent = '初始化错误: ' + error.message;
+      }
+    });
   </script>
 </body>
 </html>
