@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>生日烟花特效</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #000; 
+            overflow: hidden;
+        }
+        canvas { 
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置画布大小
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 文字粒子类
+        class TextParticle {
+            constructor(x, y, color) {
+                this.originX = x;
+                this.originY = y;
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.color = color;
+                this.size = Math.random() * 3 + 2;
+                this.speed = Math.random() * 2 + 1;
+                this.arrived = false;
+                this.delay = Math.random() * 1000;
+                this.startTime = Date.now() + this.delay;
+            }
+            
+            update() {
+                if (Date.now() < this.startTime) return;
+                
+                if (!this.arrived) {
+                    const dx = this.originX - this.x;
+                    const dy = this.originY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 1) {
+                        this.arrived = true;
+                        this.x = this.originX;
+                        this.y = this.originY;
+                    } else {
+                        this.x += dx * 0.05;
+                        this.y += dy * 0.05;
+                    }
+                }
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // 烟花粒子类
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 2 + 1;
+                this.speed = Math.random() * 5 + 1;
+                this.angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+                this.gravity = 0.05;
+                this.alpha = 1;
+                this.friction = 0.98;
+            }
+            
+            update() {
+                this.vy += this.gravity;
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.01;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 烟花类
+        class Firework {
+            constructor(targetX, targetY) {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.targetX = targetX || Math.random() * canvas.width;
+                this.targetY = targetY || Math.random() * canvas.height * 0.5 + 50;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.speed = 5;
+                this.exploded = false;
+                this.particles = [];
+                
+                // 计算上升角度
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                this.angle = Math.atan2(dy, dx);
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+            }
+            
+            update() {
+                if (!this.exploded) {
+                    // 上升阶段
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // 检查是否到达目标位置
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 5) {
+                        this.explode();
+                        this.exploded = true;
+                    }
+                } else {
+                    // 爆炸后更新粒子
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        this.particles[i].update();
+                        this.particles[i].draw();
+                        if (this.particles[i].alpha <= 0) {
+                            this.particles.splice(i, 1);
+                        }
+                    }
+                }
+            }
+            
+            draw() {
+                if (!this.exploded) {
+                    // 绘制上升轨迹
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - this.vx * 2, this.y - this.vy * 2);
+                    ctx.lineTo(this.x, this.y);
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+            
+            explode() {
+                // 创建爆炸粒子
+                const particleCount = 150;
+                for (let i = 0; i < particleCount; i++) {
+                    this.particles.push(new Particle(this.x, this.y, this.color));
+                }
+                
+                // 30%概率产生二次爆炸
+                if (Math.random() < 0.3) {
+                    setTimeout(() => {
+                        for (let i = 0; i < particleCount / 2; i++) {
+                            this.particles.push(new Particle(
+                                this.x + (Math.random() - 0.5) * 20,
+                                this.y + (Math.random() - 0.5) * 20,
+                                this.color
+                            ));
+                        }
+                    }, 200 + Math.random() * 300);
+                }
+                
+                // 如果爆炸在中心区域，显示生日文字
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const distanceToCenter = Math.sqrt(
+                    Math.pow(this.x - centerX, 2) + 
+                    Math.pow(this.y - centerY, 2)
+                );
+                
+                if (distanceToCenter < 150) {
+                    showBirthdayText();
+                }
+            }
+        }
+        
+        // 文字粒子系统
+        let textParticles = [];
+        let textVisible = false;
+        
+        function createTextParticles() {
+            textParticles = [];
+            
+            // 设置更大的字体
+            const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
+            const text = "祝周总生日快乐！";
+            
+            // 创建临时canvas用于精确测量文字
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // 先测量文字实际宽度
+            tempCtx.font = `${fontSize}px Arial`;
+            const metrics = tempCtx.measureText(text);
+            const actualTextWidth = metrics.width;
+            
+            // 设置临时canvas大小（只保留实际文字宽度）
+            tempCanvas.width = actualTextWidth;
+            tempCanvas.height = fontSize * 1.5; // 增加一些高度空间
+            
+            // 重新设置字体并绘制文字（居左对齐）
+            tempCtx.font = `${fontSize}px Arial`;
+            tempCtx.fillStyle = '#fff';
+            tempCtx.textAlign = 'left';
+            tempCtx.textBaseline = 'top';
+            tempCtx.fillText(text, 0, 0);
+            
+            // 获取像素数据
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const pixels = imageData.data;
+            
+            // 计算文字中心位置（使用实际宽度）
+            const centerX = canvas.width / 2 - actualTextWidth / 2;
+            const centerY = canvas.height / 2 - fontSize / 2;
+            
+            // 从文字图像中采样粒子
+            const density = 4;
+            for (let y = 0; y < tempCanvas.height; y += density) {
+                for (let x = 0; x < tempCanvas.width; x += density) {
+                    const index = (y * tempCanvas.width + x) * 4;
+                    if (pixels[index + 3] > 128) { // 如果像素不透明
+                        const hue = Math.random() * 360;
+                        const color = `hsl(${hue}, 100%, 50%)`;
+                        textParticles.push(new TextParticle(
+                            centerX + x,
+                            centerY + y,
+                            color
+                        ));
+                    }
+                }
+            }
+            
+            textVisible = true;
+        }
+        
+        // 显示生日文字
+        function showBirthdayText() {
+            if (!textVisible) {
+                createTextParticles();
+            }
+        }
+        
+        // 动画循环
+        const fireworks = [];
+        let lastTime = 0;
+        function animate(timestamp) {
+            // 计算时间差，使动画更流畅
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            // 使用半透明填充创造拖尾效果
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 随机创建烟花
+            if (Math.random() < 0.03 * (deltaTime / 16)) {
+                // 20%概率在中心区域发射
+                if (Math.random() < 0.2) {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    fireworks.push(new Firework(centerX, centerY));
+                } else {
+                    fireworks.push(new Firework());
+                }
+            }
+            
+            // 更新和绘制所有烟花
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                fireworks[i].draw();
+                
+                // 移除已消失的烟花
+                if (fireworks[i].exploded && fireworks[i].particles.length === 0) {
+                    fireworks.splice(i, 1);
+                }
+            }
+            
+            // 更新和绘制文字粒子
+            if (textVisible) {
+                for (let i = 0; i < textParticles.length; i++) {
+                    textParticles[i].update();
+                    textParticles[i].draw();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 点击发射烟花
+        canvas.addEventListener('click', (e) => {
+            fireworks.push(new Firework(e.clientX, e.clientY));
+        });
+        
+        // 初始烟花
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    fireworks.push(new Firework());
+                }, i * 300);
+            }
+        }, 500);
+        
+        animate(0);
+    </script>
+</body>
+</html>
