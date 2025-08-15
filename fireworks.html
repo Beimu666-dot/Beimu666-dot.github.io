@@ -208,35 +208,46 @@
             
             // 设置更大的字体
             const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
-            const text = "祝周总\n生日快乐！";
+            const lines = [
+                "  祝周总",
+                "生日快乐！"
+            ];
             
             // 创建临时canvas用于精确测量文字
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
             
-            // 先测量文字实际宽度
+            // 先测量每行文字的实际宽度
             tempCtx.font = `${fontSize}px Arial`;
-            const metrics = tempCtx.measureText(text);
-            const actualTextWidth = metrics.width;
+            const lineWidths = lines.map(line => tempCtx.measureText(line).width);
+            const maxLineWidth = Math.max(...lineWidths);
             
-            // 设置临时canvas大小（只保留实际文字宽度）
-            tempCanvas.width = actualTextWidth;
-            tempCanvas.height = fontSize * 1.5; // 增加一些高度空间
+            // 设置临时canvas大小（考虑多行高度）
+            tempCanvas.width = maxLineWidth;
+            tempCanvas.height = fontSize * lines.length * 1.5; // 行高为字体大小的1.5倍
             
-            // 重新设置字体并绘制文字（居左对齐）
+            // 重新设置字体并绘制多行文字
             tempCtx.font = `${fontSize}px Arial`;
             tempCtx.fillStyle = '#fff';
             tempCtx.textAlign = 'left';
             tempCtx.textBaseline = 'top';
-            tempCtx.fillText(text, 0, 0);
+            
+            // 清除canvas
+            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // 绘制每一行文字
+            lines.forEach((line, i) => {
+                const yPos = i * fontSize * 1.5; // 每行向下偏移
+                tempCtx.fillText(line, 0, yPos);
+            });
             
             // 获取像素数据
             const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const pixels = imageData.data;
             
-            // 计算文字中心位置（使用实际宽度）
-            const centerX = canvas.width / 2 - actualTextWidth / 2;
-            const centerY = canvas.height / 2 - fontSize / 2;
+            // 计算文字中心位置（使用最大行宽）
+            const centerX = canvas.width / 2 - maxLineWidth / 2;
+            const centerY = canvas.height / 2 - (fontSize * lines.length * 1.5) / 2;
             
             // 从文字图像中采样粒子
             const density = 4;
@@ -257,6 +268,8 @@
             
             textVisible = true;
         }
+                
+
         
         // 显示生日文字
         function showBirthdayText() {
@@ -330,3 +343,4 @@
 </body>
 
 </html>
+
