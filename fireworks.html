@@ -370,15 +370,29 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
+        // 定义粒子颜色范围（蓝色、绿色、粉色、黄色）
+        const particleColors = [
+            { name: 'blue', min: 200, max: 240 },      // 蓝色HSL范围
+            { name: 'green', min: 100, max: 140 },     // 绿色HSL范围
+            { name: 'pink', min: 320, max: 360 },      // 粉色HSL范围
+            { name: 'yellow', min: 40, max: 60 }       // 黄色HSL范围
+        ];
+        
+        // 随机获取指定颜色范围内的Hue值
+        function getRandomHue() {
+            const color = particleColors[Math.floor(Math.random() * particleColors.length)];
+            return color.min + Math.random() * (color.max - color.min);
+        }
+        
         // 粒子文字类
         class TextParticle {
-            constructor(x, y, color) {
+            constructor(x, y) {
                 this.originX = x;
                 this.originY = y;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.color = color;
-                this.size = Math.random() * 3 + 3; // 略微增大粒子大小，配合低密度使文字更清晰
+                this.color = `hsl(${getRandomHue()}, 100%, 70%)`; // 使用指定颜色
+                this.size = Math.random() * 3 + 3;
                 this.arrived = false;
                 this.delay = Math.random() * 1000;
                 this.startTime = Date.now() + this.delay;
@@ -452,7 +466,7 @@
                 this.y = canvas.height;
                 this.targetX = targetX || Math.random() * canvas.width;
                 this.targetY = targetY || Math.random() * canvas.height * 0.5 + 50;
-                this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                this.color = `hsl(${getRandomHue()}, 100%, 70%)`; // 烟花也使用指定颜色
                 this.speed = 5;
                 this.exploded = false;
                 this.particles = [];
@@ -505,7 +519,7 @@
             }
         }
         
-        // 粒子文字系统 - 调整密度使文字更清晰
+        // 粒子文字系统
         let textParticles = [];
         let textVisible = false;
         
@@ -546,18 +560,16 @@
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height / 3;
                 
-                // 减少粒子密度（增大步长），使文字更清晰
-                const density = 6; // 从3改为6，粒子数量减少约75%
+                // 粒子密度
+                const density = 6;
                 for (let y = 0; y < tempCanvas.height; y += density) {
                     for (let x = 0; x < tempCanvas.width; x += density) {
                         const index = (y * tempCanvas.width + x) * 4;
-                        // 适当提高阈值，只保留较清晰的像素点
                         if (pixels[index + 3] > 80) {
-                            const hue = Math.random() * 360;
+                            // 使用自定义颜色粒子
                             textParticles.push(new TextParticle(
                                 centerX - tempCanvas.width / 2 + x,
-                                centerY - tempCanvas.height / 2 + y,
-                                `hsl(${hue}, 100%, 70%)`
+                                centerY - tempCanvas.height / 2 + y
                             ));
                         }
                     }
@@ -585,22 +597,20 @@
                 const textWidth = ctx.measureText(line).width;
                 const lineY = centerY + lineIndex * fontSize * 1.2;
                 
-                // 为每个字符创建粒子（减少粒子数量）
+                // 为每个字符创建粒子
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
                     const charWidth = ctx.measureText(char).width;
                     const charX = centerX - textWidth / 2 + i * charWidth;
                     
-                    // 减少每个字符的粒子数量（从20改为10）
+                    // 每个字符的粒子数量
                     for (let p = 0; p < 10; p++) {
                         const offsetX = (Math.random() - 0.5) * charWidth * 0.8;
                         const offsetY = (Math.random() - 0.5) * fontSize * 0.8;
-                        const hue = Math.random() * 360;
-                        
+                        // 使用指定颜色
                         textParticles.push(new TextParticle(
                             charX + offsetX,
-                            lineY + offsetY,
-                            `hsl(${hue}, 100%, 70%)`
+                            lineY + offsetY
                         ));
                     }
                 }
@@ -665,7 +675,3 @@
     </script>
 </body>
 </html>
-
-
-
-
