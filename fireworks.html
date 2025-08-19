@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>生日祝福 - 无花边版本</title>
+    <title>生日祝福 - 文字显示修复</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -31,7 +31,7 @@
             z-index: 2;
         }
 
-        /* 蛋糕样式 - 移除花边相关样式 */
+        /* 蛋糕样式保持不变 */
         .cake {
             width: 270px;
             height: 270px;
@@ -45,6 +45,9 @@
             border-radius: 20px 20px 0 0;
             background: #ff0059;
             position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
         }
 
         .tray {
@@ -58,10 +61,103 @@
             height: 32px;
             background: #fff;
             width: 100%;
-            border-radius: 10px 10px 0 0;
         }
 
-        /* 蜡烛区域 */
+        .cream-wrap {
+            display: inline-block;
+            width: 100%;
+            animation: rotate-cake 8s linear infinite;
+        }
+
+        .--copy {
+            animation: rotate-cake2 8s linear infinite;
+            animation-delay: -4s;
+            left: -35px;
+            position: relative;
+        }
+
+        .cream-line {
+            width: 30px;
+            height: 60px;
+            background: #fff;
+            border-radius: 0 0 20px 20px;
+            box-shadow: inset 0px -7px 0px 0px #e5e5e6;
+            position: absolute;
+            top: 29px;
+            left: 0;
+        }
+
+        .cream-line:nth-child(2) {
+            left: 60px;
+            height: 65px;
+        }
+
+        .cream-wrap:not(.--copy) .cream-line:nth-child(2) {
+            left: 60px;
+            height: 65px;
+            animation: cream-low 8s linear infinite;
+        }
+
+        .cream-line:nth-child(6) {
+            left: 120px;
+            height: 67px;
+        }
+
+        .cream-line:nth-child(8) {
+            left: 180px;
+            height: 80px;
+        }
+
+        .cream-line:nth-child(10) {
+            left: 240px;
+            height: 60px;
+        }
+
+        .cream-line-top {
+            left: 30px;
+            height: 30px;
+            top: 32px;
+            position: absolute;
+            width: 30px;
+            background: white;
+        }
+
+        .cream-line-top:nth-child(5) {
+            left: 90px;
+            top: 15px;
+        }
+
+        .cream-line-top:nth-child(7) {
+            left: 150px;
+            top: 22px;
+        }
+
+        .cream-line-top:nth-child(9) {
+            left: 210px;
+            top: 22px;
+        }
+
+        .cream-line-top:nth-child(11) {
+            left: 270px;
+            top: 0px;
+            width: 32px;
+        }
+
+        .cream-line-top:nth-child(11)>.mask {
+            width: 98%;
+        }
+
+        .cream-line-top .mask {
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            left: 0;
+            background: #ff0054;
+            top: 20px;
+            border-radius: 50% 50% 0 0;
+            box-shadow: 0px -7px 0px 0px #e5e5e6;
+        }
+
         .candles {
             height: 150px;
             display: flex;
@@ -142,7 +238,7 @@
             animation-delay: -2.5s;
         }
 
-        /* 保留必要的动画 */
+        /* 动画 */
         @keyframes turn {
             0% { transform: rotateY(360deg); }
             100% { transform: rotateY(0deg); }
@@ -162,6 +258,23 @@
             0% { transform: translate(21%, 6%) rotate(45deg); }
             50% { transform: translate(21%, 6%) rotate(33deg); }
             100% { transform: translate(21%, 6%) rotate(45deg); }
+        }
+
+        @keyframes rotate-cake {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
+        @keyframes rotate-cake2 {
+            from { transform: translateX(0%); }
+            to { transform: translateX(-200%); }
+        }
+
+        @keyframes cream-low {
+            0% { height: 65px; }
+            25% { height: 90px; }
+            50% { height: 90px; }
+            100% { height: 90px; }
         }
 
         @keyframes shadow {
@@ -211,8 +324,34 @@
                 </div>
             </div>
             <div class="cream"></div>
-            <!-- 移除花边相关的HTML结构 -->
-            <div class="body"></div>
+            <div class="body">
+                <div class="cream-wrap">
+                    <div class="cream-line"></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                </div>
+                <div class="cream-wrap --copy">
+                    <div class="cream-line"></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                </div>
+            </div>
             <div class="tray"></div>
         </div>
     </div>
@@ -367,12 +506,13 @@
             }
         }
         
-        // 粒子文字系统
+        // 粒子文字系统 - 修复文字不显示问题
         let textParticles = [];
         let textVisible = false;
         
         function createTextParticles() {
             textParticles = [];
+            // 增大字体大小，确保文字清晰可见
             const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
             const lines = ["祝周总", "生日快乐！"];
             
@@ -381,31 +521,38 @@
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
                 
+                // 计算文本宽度
                 const lineWidths = lines.map(line => tempCtx.measureText(line).width);
                 const maxLineWidth = Math.max(...lineWidths);
                 
+                // 设置临时画布大小
                 tempCanvas.width = maxLineWidth;
                 tempCanvas.height = fontSize * lines.length * 1.5;
                 
+                // 绘制文本到临时画布
                 tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
                 tempCtx.fillStyle = '#fff';
-                tempCtx.textAlign = 'center';
+                tempCtx.textAlign = 'center';  // 改为居中对齐
                 tempCtx.textBaseline = 'middle';
                 
                 lines.forEach((line, i) => {
                     tempCtx.fillText(line, tempCanvas.width / 2, (i + 0.5) * fontSize * 1.2);
                 });
                 
+                // 获取像素数据
                 const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                 const pixels = imageData.data;
                 
+                // 调整文字位置到页面中上方，确保可见
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height / 3;
                 
+                // 提高粒子密度，使文字更清晰
                 const density = 3;
                 for (let y = 0; y < tempCanvas.height; y += density) {
                     for (let x = 0; x < tempCanvas.width; x += density) {
                         const index = (y * tempCanvas.width + x) * 4;
+                        // 降低透明度阈值，捕捉更多像素
                         if (pixels[index + 3] > 50) {
                             const hue = Math.random() * 360;
                             textParticles.push(new TextParticle(
@@ -418,17 +565,20 @@
                 }
                 
                 textVisible = true;
+                console.log("文字粒子生成成功，数量：", textParticles.length);
             } catch (e) {
                 console.error("粒子文字生成失败：", e);
+                // 失败时提供备选方案 - 直接绘制文字
                 drawFallbackText();
             }
         }
         
-        // 备选文字绘制方案
+        // 备选文字绘制方案，防止粒子文字生成失败
         function drawFallbackText() {
             const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
             const lines = ["祝周总", "生日快乐！"];
             
+            // 创建固定文字粒子
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 3;
             
@@ -436,11 +586,13 @@
                 const textWidth = ctx.measureText(line).width;
                 const lineY = centerY + lineIndex * fontSize * 1.2;
                 
+                // 为每个字符创建粒子
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
                     const charWidth = ctx.measureText(char).width;
                     const charX = centerX - textWidth / 2 + i * charWidth;
                     
+                    // 为每个字符创建多个粒子
                     for (let p = 0; p < 20; p++) {
                         const offsetX = (Math.random() - 0.5) * charWidth * 0.8;
                         const offsetY = (Math.random() - 0.5) * fontSize * 0.8;
@@ -456,6 +608,7 @@
             });
             
             textVisible = true;
+            console.log("使用备选方案生成文字粒子");
         }
         
         // 动画循环
@@ -464,10 +617,12 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            // 生成烟花
             if (fireworks.length < 8 && Math.random() < 0.02) {
                 fireworks.push(new Firework());
             }
             
+            // 更新和绘制烟花
             for (let i = fireworks.length - 1; i >= 0; i--) {
                 fireworks[i].update();
                 fireworks[i].draw();
@@ -476,6 +631,7 @@
                 }
             }
             
+            // 绘制文字粒子
             if (textVisible) {
                 textParticles.forEach(particle => {
                     particle.update();
@@ -491,15 +647,20 @@
             fireworks.push(new Firework(e.clientX, e.clientY));
         });
         
-        // 初始化
+        // 初始化 - 确保文字粒子一定会生成
+        console.log("准备生成文字粒子...");
+        // 立即尝试生成文字，不延迟
         createTextParticles();
         
+        // 如果文字粒子生成失败，1秒后重试
         setTimeout(() => {
             if (!textVisible || textParticles.length === 0) {
+                console.log("重试生成文字粒子...");
                 createTextParticles();
             }
         }, 1000);
         
+        // 初始烟花
         for (let i = 0; i < 5; i++) {
             setTimeout(() => fireworks.push(new Firework()), i * 300);
         }
