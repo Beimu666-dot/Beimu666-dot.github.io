@@ -1,24 +1,530 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>生日烟花特效</title>
+    <title>生日祝福 - 烟花与蛋糕</title>
     <style>
         body { 
             margin: 0; 
-            background: #000; 
             overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            height: 100vh;
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
         }
         canvas { 
             display: block; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        .cake-container {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        .text-container {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+        }
+        .birthday-text {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff0059, #ff8a00, #fcee21, #ff0059);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 300% 300%;
+            animation: gradient 3s ease infinite;
+            margin: 10px 0;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 0, 89, 0.5);
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 蛋糕样式改进 */
+        .cake {
+            width: 270px;
+            height: 270px;
+            display: flex;
+            flex-direction: column;
+            transform-style: preserve-3d;
+            transform: rotateY(0);
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+        }
+
+        .body {
+            height: 120px;
+            border-radius: 20px 20px 0 0;
+            background: linear-gradient(145deg, #ff0059, #d4004a);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+        }
+
+        .tray {
+            width: 100%;
+            height: 3px;
+            background: #cac9c9;
+            box-shadow: 0px 5px 0px 2px #9E9E9E;
+        }
+
+        .cream {
+            height: 32px;
+            background: #fff;
+            width: 100%;
+        }
+
+        .cream-wrap {
+            display: inline-block;
+            width: 100%;
+            animation: rotate-cake 8s linear infinite;
+        }
+
+        .--copy {
+            animation: rotate-cake2 8s linear infinite;
+            animation-delay: -4s;
+            left: -35px;
+            position: relative;
+        }
+
+        .cream-line {
+            width: 30px;
+            height: 60px;
+            background: #fff;
+            border-radius: 0 0 20px 20px;
+            box-shadow: inset 0px -7px 0px 0px #e5e5e6;
+            position: absolute;
+            top: 29px;
+            left: 0;
+        }
+
+        .cream-line:nth-child(2) {
+            left: 60px;
+            height: 65px;
+        }
+
+        .cream-wrap:not(.--copy) .cream-line:nth-child(2) {
+            left: 60px;
+            height: 65px;
+            animation: cream-low 8s linear infinite;
+        }
+
+        .cream-line:nth-child(6) {
+            left: 120px;
+            height: 67px;
+        }
+
+        .cream-line:nth-child(8) {
+            left: 180px;
+            height: 80px;
+        }
+
+        .cream-line:nth-child(10) {
+            left: 240px;
+            height: 60px;
+        }
+
+        .cream-line-top {
+            left: 30px;
+            height: 30px;
+            top: 32px;
+            position: absolute;
+            width: 30px;
+            background: white;
+        }
+
+        .cream-line-top:nth-child(5) {
+            left: 90px;
+            top: 15px;
+        }
+
+        .cream-line-top:nth-child(7) {
+            left: 150px;
+            top: 22px;
+        }
+
+        .cream-line-top:nth-child(9) {
+            left: 210px;
+            top: 22px;
+        }
+
+        .cream-line-top:nth-child(11) {
+            left: 270px;
+            top: 0px;
+            width: 32px;
+        }
+
+        .cream-line-top:nth-child(11)>.mask {
+            width: 98%;
+        }
+
+        .cream-line-top .mask {
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            left: 0;
+            background: #ff0054;
+            top: 20px;
+            border-radius: 50% 50% 0 0;
+            box-shadow: 0px -7px 0px 0px #e5e5e6;
+        }
+
+        .candles {
+            height: 150px;
+            display: flex;
+            justify-content: space-evenly;
+            width: 80%;
+            margin: 0 auto;
+            transform-style: preserve-3d;
+            transform: rotateY(0deg);
+            animation: turn infinite linear 5s;
+            animation-play-state: running;
+        }
+
+        .candle {
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateY(0);
+            animation: turn1 infinite linear 5s;
+            animation-play-state: running;
+            overflow: hidden;
+        }
+
+        .candle::before {
+            content: "";
+            position: absolute;
+            background: rgba(0, 0, 0, 0.15);
+            width: 100%;
+            bottom: 0;
+            height: 15px;
+            left: 0;
+            z-index: 1;
+        }
+
+        .candle--wax {
+            display: flex;
+            height: 80%;
+            flex: 1;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            background: repeating-linear-gradient(-50deg, #6ae59f, #6ae59f 20px, #68c7fb 20px, #68c7fb 40px);
+            background-position: 0 0;
+            animation: candle infinite linear 2.5s;
+        }
+
+        .candle--wick {
+            display: flex;
+            height: 4px;
+            width: 2px;
+            background: #afdbf8;
+        }
+
+        .candle--light {
+            display: flex;
+            width: 40%;
+            height: 20px;
+            border-radius: 0 60% 30% 60%;
+            transform: translate(21%, 6%) rotate(45deg);
+            background-image: linear-gradient(-45deg, #fdf967, rgba(253, 249, 103, 0.69));
+            animation: candleLight infinite linear 1s;
+            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .has-shadow .candle--wax::before {
+            content: "";
+            position: absolute;
+            background: rgba(0, 0, 0, 0.3);
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            animation: shadow infinite linear 2.5s;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .has-shadow.back .candle--wax::before {
+            animation: shadow-back infinite linear 5s;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .has-shadow.front .candle--wax::before {
+            animation: shadow-back infinite linear 5s;
+            background: rgba(0, 0, 0, 0.3);
+            animation-delay: -2.5s;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .has-shadow .candle--wax {
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes turn {
+            0% {
+                transform: rotateY(360deg);
+            }
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        @keyframes turn1 {
+            0% {
+                transform: rotateY(-360deg);
+            }
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        @keyframes candle {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 -120px;
+            }
+        }
+
+        @keyframes candleLight {
+            0% {
+                transform: translate(21%, 6%) rotate(45deg);
+                box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                transform: translate(21%, 6%) rotate(33deg) scale(1.2);
+                box-shadow: 0 0 15px 8px rgba(255, 215, 0, 0.7);
+            }
+            100% {
+                transform: translate(21%, 6%) rotate(45deg);
+                box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        @keyframes rotate-cake {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        @keyframes rotate-cake2 {
+            from {
+                transform: translateX(0%);
+            }
+            to {
+                transform: translateX(-200%);
+            }
+        }
+
+        @keyframes cream-low {
+            0% {
+                height: 65px;
+            }
+            25% {
+                height: 90px;
+            }
+            50% {
+                height: 90px;
+            }
+            100% {
+                height: 90px;
+            }
+        }
+
+        @keyframes shadow {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes shadow-back {
+            0% {
+                opacity: 0;
+            }
+            25% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* 音乐控制按钮 */
+        .music-control {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(255, 0, 89, 0.5);
+        }
+
+        .music-control i {
+            color: white;
+            font-size: 24px;
+        }
+
+        /* 提示信息 */
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .birthday-text {
+                font-size: 2.5rem;
+            }
+            .cake {
+                transform: scale(0.8);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .birthday-text {
+                font-size: 1.8rem;
+            }
+            .cake {
+                transform: scale(0.6);
+            }
+            .instructions {
+                font-size: 12px;
+                bottom: 80px;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- 烟花背景 -->
     <canvas id="fireworks"></canvas>
+    
+    <!-- 文字区域 -->
+    <div class="text-container">
+        <div class="birthday-text">祝周总</div>
+        <div class="birthday-text">生日快乐！</div>
+    </div>
+    
+    <!-- 蛋糕区域 -->
+    <div class="cake-container">
+        <div class="cake">
+            <div class="candles has-shadow">
+                <div class="candle front">
+                    <div class="candle--light"></div>
+                    <div class="candle--wick"></div>
+                    <div class="candle--wax"></div>
+                </div>
+                <div class="candle back">
+                    <div class="candle--light"></div>
+                    <div class="candle--wick"></div>
+                    <div class="candle--wax"></div>
+                </div>
+                <div class="candle front">
+                    <div class="candle--light"></div>
+                    <div class="candle--wick"></div>
+                    <div class="candle--wax"></div>
+                </div>
+            </div>
+            <div class="cream">
+                <div class="cream-wrap">
+                    <div class="cream-line"></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                </div>
+                <div class="cream-wrap --copy">
+                    <div class="cream-line"></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                    <div class="cream-line"></div>
+                    <div class="cream-line-top"><div class="mask"></div></div>
+                </div>
+            </div>
+            <div class="body"></div>
+            <div class="tray"></div>
+        </div>
+    </div>
+
+    <!-- 音乐控制按钮 -->
+    <button class="music-control" id="musicToggle">
+        <i class="fas fa-volume-up"></i>
+    </button>
+    
+    <!-- 提示信息 -->
+    <div class="instructions">点击屏幕任意位置发射烟花</div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-happy-birthday-to-you-493.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
+        // 烟花效果代码
         const canvas = document.getElementById('fireworks');
         const ctx = canvas.getContext('2d');
+        const bgMusic = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        let musicPlaying = false;
         
         // 设置画布大小
         function resizeCanvas() {
@@ -28,62 +534,47 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
-        // 文字粒子类
-        class TextParticle {
-            constructor(x, y, color) {
-                this.originX = x;
-                this.originY = y;
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.color = color;
-                this.size = Math.random() * 3 + 2;
-                this.speed = Math.random() * 2 + 1;
-                this.arrived = false;
-                this.delay = Math.random() * 1000;
-                this.startTime = Date.now() + this.delay;
-            }
-            
-            update() {
-                if (Date.now() < this.startTime) return;
-                
-                if (!this.arrived) {
-                    const dx = this.originX - this.x;
-                    const dy = this.originY - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 1) {
-                        this.arrived = true;
-                        this.x = this.originX;
-                        this.y = this.originY;
-                    } else {
-                        this.x += dx * 0.05;
-                        this.y += dy * 0.05;
-                    }
-                }
-            }
-            
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
         // 烟花粒子类
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y, color, type = 'normal') {
                 this.x = x;
                 this.y = y;
                 this.color = color;
-                this.radius = Math.random() * 2 + 1;
-                this.speed = Math.random() * 5 + 1;
-                this.angle = Math.random() * Math.PI * 2;
-                this.vx = Math.cos(this.angle) * this.speed;
-                this.vy = Math.sin(this.angle) * this.speed;
-                this.gravity = 0.05;
-                this.alpha = 1;
-                this.friction = 0.98;
+                this.type = type;
+                
+                if (type === 'normal') {
+                    this.radius = Math.random() * 2 + 1;
+                    this.speed = Math.random() * 5 + 1;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(this.angle) * this.speed;
+                    this.vy = Math.sin(this.angle) * this.speed;
+                    this.gravity = 0.05;
+                    this.alpha = 1;
+                    this.friction = 0.98;
+                    this.life = 100;
+                } else if (type === 'sparkle') {
+                    this.radius = Math.random() * 1.5 + 0.5;
+                    this.speed = Math.random() * 3 + 1;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(this.angle) * this.speed;
+                    this.vy = Math.sin(this.angle) * this.speed;
+                    this.gravity = 0.02;
+                    this.alpha = 1;
+                    this.friction = 0.97;
+                    this.life = 80;
+                    this.pulse = 0;
+                    this.pulseSpeed = Math.random() * 0.1 + 0.05;
+                } else if (type === 'trail') {
+                    this.radius = Math.random() * 1 + 0.5;
+                    this.speed = Math.random() * 2 + 1;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(this.angle) * this.speed;
+                    this.vy = Math.sin(this.angle) * this.speed;
+                    this.gravity = 0.03;
+                    this.alpha = 0.7;
+                    this.friction = 0.96;
+                    this.life = 120;
+                }
             }
             
             update() {
@@ -93,12 +584,31 @@
                 this.x += this.vx;
                 this.y += this.vy;
                 this.alpha -= 0.01;
+                this.life--;
+                
+                if (this.type === 'sparkle') {
+                    this.pulse += this.pulseSpeed;
+                    this.radius = 1.5 + Math.sin(this.pulse) * 1;
+                }
             }
             
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
+                
+                if (this.type === 'trail') {
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.radius
+                    );
+                    gradient.addColorStop(0, 'white');
+                    gradient.addColorStop(0.4, this.color);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = this.color;
+                }
+                
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fill();
@@ -113,10 +623,12 @@
                 this.y = canvas.height;
                 this.targetX = targetX || Math.random() * canvas.width;
                 this.targetY = targetY || Math.random() * canvas.height * 0.5 + 50;
-                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
                 this.speed = 5;
                 this.exploded = false;
                 this.particles = [];
+                this.trail = [];
+                this.trailTimer = 0;
                 
                 // 计算上升角度
                 const dx = this.targetX - this.x;
@@ -132,6 +644,27 @@
                     this.x += this.vx;
                     this.y += this.vy;
                     
+                    // 创建尾迹
+                    this.trailTimer++;
+                    if (this.trailTimer % 3 === 0) {
+                        this.trail.push({
+                            x: this.x,
+                            y: this.y,
+                            alpha: 1,
+                            size: Math.random() * 2 + 1
+                        });
+                    }
+                    
+                    // 更新尾迹
+                    for (let i = this.trail.length - 1; i >= 0; i--) {
+                        this.trail[i].alpha -= 0.03;
+                        this.trail[i].size -= 0.05;
+                        
+                        if (this.trail[i].alpha <= 0 || this.trail[i].size <= 0) {
+                            this.trail.splice(i, 1);
+                        }
+                    }
+                    
                     // 检查是否到达目标位置
                     const dx = this.targetX - this.x;
                     const dy = this.targetY - this.y;
@@ -145,8 +678,7 @@
                     // 爆炸后更新粒子
                     for (let i = this.particles.length - 1; i >= 0; i--) {
                         this.particles[i].update();
-                        this.particles[i].draw();
-                        if (this.particles[i].alpha <= 0) {
+                        if (this.particles[i].life <= 0 || this.particles[i].alpha <= 0) {
                             this.particles.splice(i, 1);
                         }
                     }
@@ -155,126 +687,52 @@
             
             draw() {
                 if (!this.exploded) {
-                    // 绘制上升轨迹
+                    // 绘制尾迹
+                    for (let i = 0; i < this.trail.length; i++) {
+                        const point = this.trail[i];
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${point.alpha})`;
+                        ctx.fill();
+                    }
+                    
+                    // 绘制烟花头部
                     ctx.beginPath();
-                    ctx.moveTo(this.x - this.vx * 2, this.y - this.vy * 2);
-                    ctx.lineTo(this.x, this.y);
-                    ctx.strokeStyle = this.color;
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                } else {
+                    // 绘制爆炸粒子
+                    for (let i = 0; i < this.particles.length; i++) {
+                        this.particles[i].draw();
+                    }
                 }
             }
             
             explode() {
                 // 创建爆炸粒子
                 const particleCount = 150;
+                const types = ['normal', 'sparkle', 'trail'];
+                
                 for (let i = 0; i < particleCount; i++) {
-                    this.particles.push(new Particle(this.x, this.y, this.color));
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    this.particles.push(new Particle(this.x, this.y, this.color, type));
                 }
                 
                 // 30%概率产生二次爆炸
                 if (Math.random() < 0.3) {
                     setTimeout(() => {
                         for (let i = 0; i < particleCount / 2; i++) {
+                            const type = types[Math.floor(Math.random() * types.length)];
                             this.particles.push(new Particle(
                                 this.x + (Math.random() - 0.5) * 20,
                                 this.y + (Math.random() - 0.5) * 20,
-                                this.color
+                                this.color,
+                                type
                             ));
                         }
                     }, 200 + Math.random() * 300);
                 }
-                
-                // 如果爆炸在中心区域，显示生日文字
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const distanceToCenter = Math.sqrt(
-                    Math.pow(this.x - centerX, 2) + 
-                    Math.pow(this.y - centerY, 2)
-                );
-                
-                if (distanceToCenter < 150) {
-                    showBirthdayText();
-                }
-            }
-        }
-        
-        // 文字粒子系统
-        let textParticles = [];
-        let textVisible = false;
-        
-        function createTextParticles() {
-            textParticles = [];
-            
-            // 设置更大的字体
-            const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
-            const lines = [
-                "  祝周总",
-                "生日快乐！"
-            ];
-            
-            // 创建临时canvas用于精确测量文字
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // 先测量每行文字的实际宽度
-            tempCtx.font = `${fontSize}px Arial`;
-            const lineWidths = lines.map(line => tempCtx.measureText(line).width);
-            const maxLineWidth = Math.max(...lineWidths);
-            
-            // 设置临时canvas大小（考虑多行高度）
-            tempCanvas.width = maxLineWidth;
-            tempCanvas.height = fontSize * lines.length * 1.5; // 行高为字体大小的1.5倍
-            
-            // 重新设置字体并绘制多行文字
-            tempCtx.font = `${fontSize}px Arial`;
-            tempCtx.fillStyle = '#fff';
-            tempCtx.textAlign = 'left';
-            tempCtx.textBaseline = 'top';
-            
-            // 清除canvas
-            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // 绘制每一行文字
-            lines.forEach((line, i) => {
-                const yPos = i * fontSize * 1.5; // 每行向下偏移
-                tempCtx.fillText(line, 0, yPos);
-            });
-            
-            // 获取像素数据
-            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-            const pixels = imageData.data;
-            
-            // 计算文字中心位置（使用最大行宽）
-            const centerX = canvas.width / 2 - maxLineWidth / 2;
-            const centerY = canvas.height / 2 - (fontSize * lines.length * 1.5) / 2;
-            
-            // 从文字图像中采样粒子
-            const density = 4;
-            for (let y = 0; y < tempCanvas.height; y += density) {
-                for (let x = 0; x < tempCanvas.width; x += density) {
-                    const index = (y * tempCanvas.width + x) * 4;
-                    if (pixels[index + 3] > 128) { // 如果像素不透明
-                        const hue = Math.random() * 360;
-                        const color = `hsl(${hue}, 100%, 50%)`;
-                        textParticles.push(new TextParticle(
-                            centerX + x,
-                            centerY + y,
-                            color
-                        ));
-                    }
-                }
-            }
-            
-            textVisible = true;
-        }
-                
-
-        
-        // 显示生日文字
-        function showBirthdayText() {
-            if (!textVisible) {
-                createTextParticles();
             }
         }
         
@@ -313,20 +771,24 @@
                 }
             }
             
-            // 更新和绘制文字粒子
-            if (textVisible) {
-                for (let i = 0; i < textParticles.length; i++) {
-                    textParticles[i].update();
-                    textParticles[i].draw();
-                }
-            }
-            
             requestAnimationFrame(animate);
         }
         
         // 点击发射烟花
         canvas.addEventListener('click', (e) => {
             fireworks.push(new Firework(e.clientX, e.clientY));
+        });
+        
+        // 音乐控制
+        musicToggle.addEventListener('click', () => {
+            if (musicPlaying) {
+                bgMusic.pause();
+                musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                bgMusic.play().catch(e => console.log('Autoplay prevented:', e));
+                musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+            musicPlaying = !musicPlaying;
         });
         
         // 初始烟花
@@ -341,6 +803,4 @@
         animate(0);
     </script>
 </body>
-
 </html>
-
