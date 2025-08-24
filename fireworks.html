@@ -693,101 +693,106 @@
             let textVisible = false;
             
             function createTextParticles() {
-                textParticles = [];
-                // 保持字体大小不变
-                const fontSize = Math.min(canvas.width, canvas.height) * 0.20;
-                const lines = ["祝北斗星", "  生日快乐！"];
-                
-                try {
-                    const tempCanvas = document.createElement('canvas');
-                    const tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
-                    
-                    // 计算文本宽度
-                    const lineWidths = lines.map(line => tempCtx.measureText(line).width);
-                    const maxLineWidth = Math.max(...lineWidths);
-                    
-                    // 设置临时画布大小
-                    tempCanvas.width = maxLineWidth;
-                    tempCanvas.height = fontSize * lines.length * 1.5;
-                    
-                    // 绘制文本到临时画布
-                    tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
-                    tempCtx.fillStyle = '#fff';
-                    tempCtx.textAlign = 'center';
-                    tempCtx.textBaseline = 'middle';
-                    
-                    lines.forEach((line, i) => {
-                        tempCtx.fillText(line, tempCanvas.width / 2, (i + 0.5) * fontSize * 1.2);
-                    });
-                    
-                    // 获取像素数据
-                    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                    const pixels = imageData.data;
-                    
-                    // 调整文字位置
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 3;
-                    
-                    // 粒子密度
-                    const density = 8;
-                    for (let y = 0; y < tempCanvas.height; y += density) {
-                        for (let x = 0; x < tempCanvas.width; x += density) {
-                            const index = (y * tempCanvas.width + x) * 4;
-                            if (pixels[index + 3] > 80) {
-                                // 使用自定义颜色粒子
-                                textParticles.push(new TextParticle(
-                                    centerX - tempCanvas.width / 2 + x,
-                                    centerY - tempCanvas.height / 2 + y
-                                ));
-                            }
-                        }
-                    }
-                    
-                    textVisible = true;
-                    console.log("文字粒子生成成功，数量：", textParticles.length);
-                } catch (e) {
-                    console.error("粒子文字生成失败：", e);
-                    // 失败时提供备选方案
-                    drawFallbackText();
+    textParticles = [];
+    // 保持字体大小不变
+    const fontSize = Math.min(canvas.width, canvas.height) * 0.13;
+    // 修改为三行文字：祝北斗星、21岁、生日快乐！
+    const lines = ["祝北斗星", " 21岁", "   生日快乐！"];
+    
+    try {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
+        
+        // 计算文本宽度
+        const lineWidths = lines.map(line => tempCtx.measureText(line).width);
+        const maxLineWidth = Math.max(...lineWidths);
+        
+        // 调整临时画布高度以适应三行文字
+        tempCanvas.width = maxLineWidth;
+        tempCanvas.height = fontSize * lines.length * 1.5;
+        
+        // 绘制文本到临时画布
+        tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
+        tempCtx.fillStyle = '#fff';
+        tempCtx.textAlign = 'center';
+        tempCtx.textBaseline = 'middle';
+        
+        // 绘制三行文字，调整行间距
+        lines.forEach((line, i) => {
+            tempCtx.fillText(line, tempCanvas.width / 2, (i + 0.5) * fontSize * 1.2);
+        });
+        
+        // 获取像素数据
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const pixels = imageData.data;
+        
+        // 调整文字位置，使其在画布中居中显示
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 3;
+        
+        // 粒子密度
+        const density = 8;
+        for (let y = 0; y < tempCanvas.height; y += density) {
+            for (let x = 0; x < tempCanvas.width; x += density) {
+                const index = (y * tempCanvas.width + x) * 4;
+                if (pixels[index + 3] > 80) {
+                    // 使用自定义颜色粒子
+                    textParticles.push(new TextParticle(
+                        centerX - tempCanvas.width / 2 + x,
+                        centerY - tempCanvas.height / 2 + y
+                    ));
                 }
             }
+        }
+        
+        textVisible = true;
+        console.log("文字粒子生成成功，数量：", textParticles.length);
+    } catch (e) {
+        console.error("粒子文字生成失败：", e);
+        // 失败时提供备选方案
+        drawFallbackText();
+    }
+}
             
-            // 备选文字绘制方案
-            function drawFallbackText() {
-                const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
-                const lines = ["祝北斗星", " 生日快乐！"];
-                
-                // 创建固定文字粒子
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 3;
-                
-                lines.forEach((line, lineIndex) => {
-                    const textWidth = ctx.measureText(line).width;
-                    const lineY = centerY + lineIndex * fontSize * 1.2;
-                    
-                    // 为每个字符创建粒子
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        const charWidth = ctx.measureText(char).width;
-                        const charX = centerX - textWidth / 2 + i * charWidth;
-                        
-                        // 每个字符的粒子数量
-                        for (let p = 0; p < 10; p++) {
-                            const offsetX = (Math.random() - 0.5) * charWidth * 0.8;
-                            const offsetY = (Math.random() - 0.5) * fontSize * 0.8;
-                            // 使用指定颜色
-                            textParticles.push(new TextParticle(
-                                charX + offsetX,
-                                lineY + offsetY
-                            ));
-                        }
-                    }
-                });
-                
-                textVisible = true;
-                console.log("使用备选方案生成文字粒子");
+           // 备选文字绘制方案
+function drawFallbackText() {
+    const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
+    // 修改为包含三行内容的数组
+    const lines = ["祝北斗星", "21岁", "生日快乐！"]; 
+
+    // 创建固定文字粒子
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 3;
+
+    lines.forEach((line, lineIndex) => {
+        const textWidth = ctx.measureText(line).width;
+        // 调整行间距，让三行文字更合理分布，可根据实际需求微调乘数（如 1.5 等）
+        const lineY = centerY + lineIndex * fontSize * 1.2; 
+
+        // 为每个字符创建粒子
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const charWidth = ctx.measureText(char).width;
+            const charX = centerX - textWidth / 2 + i * charWidth;
+
+            // 每个字符的粒子数量
+            for (let p = 0; p < 10; p++) {
+                const offsetX = (Math.random() - 0.5) * charWidth * 0.8;
+                const offsetY = (Math.random() - 0.5) * fontSize * 0.8;
+                // 使用指定颜色
+                textParticles.push(new TextParticle(
+                    charX + offsetX,
+                    lineY + offsetY
+                ));
             }
+        }
+    });
+
+    textVisible = true;
+    console.log("使用备选方案生成文字粒子");
+}
+
             
             // 动画循环
             const fireworks = [];
@@ -846,4 +851,5 @@
     </script>
 </body>
 </html>
+
 
