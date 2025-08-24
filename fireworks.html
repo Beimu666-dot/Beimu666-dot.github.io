@@ -362,14 +362,15 @@
 <body>
     <canvas id="fireworks"></canvas>
     
-    <!-- 音频元素移到这里，确保在JavaScript代码之前加载 -->
+    <!-- 音频元素 -->
     <audio id="bgMusic" loop preload="auto">
-        <source src="https://beimu666-dot.github.io/TFBOYS.mp3" type="audio/mpeg">
+        <!-- 请替换为你GitHub仓库中的音乐文件路径 -->
+        <source src="TFBOYS.mp3" type="audio/mpeg">
         您的浏览器不支持音频播放
      </audio>
     
     <!-- 左上角烟花提示文字 -->
-    <div class="firework-tooltip">点击屏幕释放更多烟花</div>
+    <div class="firework-tooltip">点击屏幕释放烟花</div>
     
     <!-- 背景音乐控制按钮 -->
     <div class="music-btn-container">
@@ -441,6 +442,7 @@
             const musicIcon = musicControl.querySelector('i');
             const musicTooltip = document.querySelector('.music-tooltip');
             let musicPlayed = false;
+            let isProcessing = false; // 添加状态锁，防止连续操作冲突
 
             // 检查音频元素是否成功加载
             if (!bgMusic) {
@@ -448,30 +450,67 @@
                 return;
             }
 
-            // 点击页面任意位置播放音乐
-            document.addEventListener('click', () => {
-                if (!musicPlayed && bgMusic) {
-                    bgMusic.play().catch(err => {
-                        console.log('音乐播放提示：', err);
-                        alert('音乐播放需要先点击页面，或检查音乐文件路径是否正确！');
+            // 点击页面任意位置播放音乐（首次解锁）
+            document.addEventListener('click', firstClickHandler, { once: true });
+            
+            function firstClickHandler() {
+                if (!musicPlayed) {
+                    playMusic().then(() => {
+                        musicPlayed = true;
+                        updateMusicUI();
+                    }).catch(err => {
+                        console.log('首次播放失败：', err);
                     });
-                    musicPlayed = true;
-                    updateMusicUI();
                 }
-            });
+            }
 
             // 点击音乐按钮切换播放/暂停
             musicControl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (!bgMusic) return;
+                if (!bgMusic || isProcessing) return;
                 
                 if (bgMusic.paused) {
-                    bgMusic.play();
+                    playMusic();
                 } else {
-                    bgMusic.pause();
+                    pauseMusic();
                 }
-                updateMusicUI();
             });
+
+            // 封装播放音乐的函数，添加状态控制
+            function playMusic() {
+                // 如果正在处理中，直接返回
+                if (isProcessing) return Promise.reject(new Error('操作正在处理中'));
+                
+                isProcessing = true;
+                return bgMusic.play()
+                    .then(() => {
+                        updateMusicUI();
+                        return Promise.resolve();
+                    })
+                    .catch(err => {
+                        console.log('播放音乐出错：', err);
+                        return Promise.reject(err);
+                    })
+                    .finally(() => {
+                        // 无论成功失败，都释放锁
+                        isProcessing = false;
+                    });
+            }
+
+            // 封装暂停音乐的函数
+            function pauseMusic() {
+                if (isProcessing) return;
+                
+                isProcessing = true;
+                try {
+                    bgMusic.pause();
+                    updateMusicUI();
+                } catch (err) {
+                    console.log('暂停音乐出错：', err);
+                } finally {
+                    isProcessing = false;
+                }
+            }
 
             // 更新音乐按钮和提示文字UI
             function updateMusicUI() {
@@ -488,7 +527,7 @@
                 }
             }
 
-            // 2. 烟花和粒子文字效果
+            // 2. 烟花和粒子文字效果（保持不变）
             const canvas = document.getElementById('fireworks');
             const ctx = canvas.getContext('2d');
             
@@ -807,6 +846,3 @@
     </script>
 </body>
 </html>
-
-
-
